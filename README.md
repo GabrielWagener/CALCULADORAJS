@@ -1,2 +1,2 @@
 # CALCULADORAJS
-Projeto de Calculadora Utilizando JS. By: Gabriel.
+Projeto de Calculadora Utilizando (#{EM DESENVOLVIMENTO#})JS. By: Gabriel.
