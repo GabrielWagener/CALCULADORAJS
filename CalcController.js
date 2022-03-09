@@ -25,8 +25,8 @@ class CalcController {
 
     setDisplayDateTime (){
         this.displayDate = this.CurrentDate.toLocaleDateString(this._locale,{
-            day: '2-digit'
-            month: 'numeric'
+            day: '2-digit',
+            month: 'numeric',
             _year: 'numeric',
             get year() {
                 return this._year;
