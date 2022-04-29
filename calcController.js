@@ -2,8 +2,8 @@ class calcController {
  
     constructor(){
 
-        this._lastOperation = '';
-        this._lasNumber = '';
+        this._lastOperator = '';
+        this._lastNumber = '';
 
         this._operation = [];
         this._locale = 'pt-BR';
@@ -13,6 +13,7 @@ class calcController {
         this._currentDate;
         this.initialize();
         this.initButtonsEvents();
+        this.initKeyboard();
 
     }
  
@@ -30,21 +31,72 @@ class calcController {
 
     }
 
-    addEventListenerAll(element, events, fn){
+    initKeyboard() {
+
+        document.addEventListener('keyup', e=> {
+
+            switch (e.key) {
+
+                case 'Escape':
+                    this.clearAll();
+                    break;
+    
+                case 'Backspace':
+                    this.clearEntry();
+                    break;
+    
+                case '+':    
+                case '-':    
+                case '*':    
+                case '/':    
+                case '%':
+                    this.addOperation(e.key);
+                    break;
+    
+                case 'Enter':
+                case '=':
+                    this.calc();
+                    break;
+    
+                case '.':
+                case ',':
+                    this.addDot();
+                    break;
+    
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    this.addOperation(parseInt(e.key));
+                    break;
+    
+            }
+
+        })
+
+    }
+
+   addEventListenerAll(element, events, fn){
 
         events.split(' ').forEach(event => {
 
             element.addEventListener(event, fn, false);
-            
-        });
 
-    };
+        })
+    
+    }
 
     clearAll(){
 
         this._operation = [];
         this._lastNumber = '';
-        this._lastOperation = '';
+        this._lastOperator = '';
 
         this.setLastNumberToDisplay();
 
@@ -56,73 +108,75 @@ class calcController {
 
         this.setLastNumberToDisplay();
 
-
     }
 
-    getLastOperation (){
+    getLastOperation(){
 
         return this._operation[this._operation.length-1];
-
 
     }
 
     setLastOperation(value){
 
         this._operation[this._operation.length-1] = value;
+
     }
 
     isOperator(value){
 
-        return (['+','-','*','%', '/'].indexOf(value) > -1); 
-     
+        return (['+', '-', '*', '%', '/'].indexOf(value) > -1);
+
     }
 
     pushOperation(value){
 
         this._operation.push(value);
 
-        if (this._operation.lenght > 3) {
+        if (this._operation.length > 3) {
 
             this.calc();
 
         }
+
     }
 
     getResult(){
 
+
+
         return eval(this._operation.join(""));
+
     }
 
     calc(){
 
         let last = '';
+        
+        this._lastOperator = this.getLastItem();
 
-        this._lastOperation = this.getLastItem();
-
-        if (this._operation.length < 3){
+        if (this._operation.length < 3) {
 
             let firstItem = this._operation[0];
-            this._operation = [firstItem, this._lastOperation, this._lastNumber];
+
+            this._operation = [firstItem, this._lastOperator, this._lastNumber];
+
         }
 
-        if (this._operation.length > 3) { 
+        if (this._operation.length > 3) {
+
             last = this._operation.pop();
 
             this._lastNumber = this.getResult();
-
 
         } else if (this._operation.length == 3) {
 
             this._lastNumber = this.getLastItem(false);
 
-         }
-
-         console.log('lastoperator', this._lastOperation);
-         console.log('lastnumber', this.lastNumber);
-
+        }
+        
         let result = this.getResult();
 
-        if (last == '%'){ 
+        if (last == '%') {
 
             result /= 100;
 
@@ -130,53 +184,54 @@ class calcController {
 
         } else {
 
-            this._operation = [result, last];
+            this._operation = [result];
 
             if (last) this._operation.push(last);
 
         }
 
         this.setLastNumberToDisplay();
+
     }
 
     getLastItem(isOperator = true){
 
         let lastItem;
 
-            for (let i = this._operation.lenght-1; i >= 0; i--){
+        for (let i = this._operation.length-1; i >= 0; i--){
 
-                if (isOperator) { 
-
-                if (this.isOperator(this._operation[i]) == isOperator){
-
-                    lastItem = this._operation[i];
-                    break;
-                }
-            }
-
-            if (!lastItem){
-
-                lastItem = (isOperator) ? this._lastOperator : this._lastNumber;
+            if (this.isOperator(this._operation[i]) == isOperator) {
+    
+                lastItem = this._operation[i];
+    
+                break;
+    
             }
 
         }
 
+        if (!lastItem) {
+
+            lastItem = (isOperator) ? this._lastOperator : this._lastNumber;
+
+        }
+
         return lastItem;
+
     }
 
     setLastNumberToDisplay(){
 
         let lastNumber = this.getLastItem(false);
 
-        if(!lastNumber) lastNumber = 0;
+        if (!lastNumber) lastNumber = 0;
 
         this.displayCalc = lastNumber;
 
-
-
-    };
+    }
 
     addOperation(value){
+
 
         if (isNaN(this.getLastOperation())) {
 
@@ -189,28 +244,27 @@ class calcController {
                 this.pushOperation(value);
 
                 this.setLastNumberToDisplay();
-            }
 
+            }
 
         } else {
 
-            if (this.isOperator(value)) {
+            if (this.isOperator(value)){
 
                 this.pushOperation(value);
-                
-                    
+
             } else {
 
-            let newValue = this.getLastOperation().toString() + value.toString();
+                let newValue = this.getLastOperation().toString() + value.toString();
 
-            this.setLastOperation(parseFloat(newValue));
+                this.setLastOperation(newValue);
 
-            this.setLastNumberToDisplay();
+                this.setLastNumberToDisplay();
+
+            }
 
         }
 
-        }
-        
     }
 
     setError(){
@@ -221,6 +275,8 @@ class calcController {
     addDot(){
 
         let lastOperation = this.getLastOperation();
+
+        if (typeof lastOperation === 'string' && lastOperation.split('').indexOf('.') > -1 ) return;
 
         if (this.isOperator(lastOperation) || !lastOperation){
             this.pushOperation('0.');
