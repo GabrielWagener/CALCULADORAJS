@@ -1,5 +1,5 @@
 class calcController {
- 
+
     constructor(){
 
         this._lastOperator = '';
@@ -16,7 +16,35 @@ class calcController {
         this.initKeyboard();
 
     }
- 
+
+    pasteFromClipboard(){
+
+        document.addEventListener('paste', e=>{
+
+            let text = e.clipboardData.getData('Text');
+
+            this.displayCalc = parseFloat(text);
+
+        });
+
+    }
+
+    copyToClipboard(){
+
+        let input = document.createElement('input');
+
+        input.value = this.displayCalc;
+
+        document.body.appendChild(input);
+
+        input.select();
+
+        document.execCommand("Copy");
+
+        input.remove();
+
+    }
+
     initialize(){
 
         this.setDisplayDateTime()
@@ -28,6 +56,7 @@ class calcController {
         }, 1000);
 
         this.setLastNumberToDisplay();
+        this.pasteFromClipboard();
 
     }
 
@@ -75,6 +104,10 @@ class calcController {
                 case '9':
                     this.addOperation(parseInt(e.key));
                     break;
+
+                case 'c':
+                    if (e.ctrlKey) this.copyToClipboard();
+                    break;
     
             }
 
@@ -82,7 +115,7 @@ class calcController {
 
     }
 
-   addEventListenerAll(element, events, fn){
+    addEventListenerAll(element, events, fn){
 
         events.split(' ').forEach(event => {
 
@@ -270,70 +303,67 @@ class calcController {
     setError(){
 
         this.displayCalc = "Error";
+        
     }
 
     addDot(){
 
         let lastOperation = this.getLastOperation();
 
-        if (typeof lastOperation === 'string' && lastOperation.split('').indexOf('.') > -1 ) return;
+        if (typeof lastOperation === 'string' && lastOperation.split('').indexOf('.') > -1) return;
 
-        if (this.isOperator(lastOperation) || !lastOperation){
+        if (this.isOperator(lastOperation) || !lastOperation) {
+
             this.pushOperation('0.');
+
         } else {
+
             this.setLastOperation(lastOperation.toString() + '.');
+
         }
 
         this.setLastNumberToDisplay();
-
+        
     }
-
-
 
     execBtn(value){
 
-        switch (value) { 
-            
+        switch (value) {
+
             case 'ac':
                 this.clearAll();
                 break;
 
             case 'ce':
-                this.clearEntry();    
+                this.clearEntry();
                 break;
 
             case 'soma':
-                this.addOperation('+');                    
+                this.addOperation('+');
                 break;
 
             case 'subtracao':
-                this.addOperation('-');  
-
+                this.addOperation('-');
                 break;
 
             case 'divisao':
-                this.addOperation('/');  
-                
+                this.addOperation('/');
                 break;
 
             case 'multiplicacao':
-                this.addOperation('*');  
-
+                this.addOperation('*');
                 break;
 
             case 'porcento':
-                this.addOperation('%');  
-
+                this.addOperation('%');
                 break;
 
             case 'igual':
                 this.calc();
-
                 break;
 
             case 'ponto':
-                this.addDot();  
-                
+                this.addDot();
                 break;
 
             case '0':
@@ -345,16 +375,16 @@ class calcController {
             case '6':
             case '7':
             case '8':
-            case '9':      
-            
+            case '9':
                 this.addOperation(parseInt(value));
                 break;
 
             default:
                 this.setError();
-                break;            
-            
+                break;
+
         }
+
     }
 
     initButtonsEvents(){
@@ -365,19 +395,20 @@ class calcController {
 
             this.addEventListenerAll(btn, "click drag", e => {
 
-                let textBtn = btn.className.baseVal.replace("btn-", "");
+                let textBtn = btn.className.baseVal.replace("btn-","");
 
                 this.execBtn(textBtn);
 
-            });
-
-            this.addEventListenerAll(btn, "mouseover mouseup mousedown", e => {
-            
-                btn.style.cursor = "pointer";
             })
 
+            this.addEventListenerAll(btn, "mouseover mouseup mousedown", e => {
 
-        });
+                btn.style.cursor = "pointer";
+
+            })
+
+        })
+
     }
 
     setDisplayDateTime(){
